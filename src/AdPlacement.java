@@ -1,4 +1,5 @@
 public class AdPlacement {
+
     static String solution(String play_time, String adv_time, String[] logs) {
         int playTime = timeToSeconds(play_time);
         int advTime = timeToSeconds(adv_time);
