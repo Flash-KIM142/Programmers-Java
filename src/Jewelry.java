@@ -1,47 +1,55 @@
 import java.io.*;
-import java.util.HashMap;
 import java.util.Arrays;
-import java.util.Queue;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.HashMap;
 
 public class Jewelry {
+    static HashSet<String> types = new HashSet<>();
+    static HashMap<String, Integer> map = new HashMap<>();
+
     static int[] solution(String[] gems) {
-        HashSet<String> kinds = new HashSet<>(Arrays.asList(gems));
-        HashMap<String, Integer> hm = new HashMap<>();
-        Queue<String> q = new LinkedList<>();
+        getTypes(gems);
+        int typeSize = types.size();
+        if(typeSize==1) return new int[]{1, 1};
 
-        if(kinds.size()==1) return new int[]{1,1};
+        int gemsLen = gems.length;
+        if(typeSize==gemsLen) return new int[]{1, gemsLen};
 
-        int start=0, tmp_start=0;
-        int min_distance = Integer.MAX_VALUE;
+        int start=0, end=0; // 정답
+        int left=0, right=0; // 검사용
+        int len = Integer.MAX_VALUE;
 
-        for(String gem: gems){
-            q.add(gem);
-            hm.put(gem, hm.getOrDefault(gem,0)+1);
-
-            while(true){
-                String tmp = q.peek();
-                if(hm.get(tmp)>1){
-                    hm.put(tmp, hm.get(tmp)-1);
-                    q.poll();
-                    tmp_start++;
-                }
-                else    break;
+        while(true){
+            if(map.size()==typeSize){
+                map.put(gems[left], map.get(gems[left])-1);
+                if(map.get(gems[left])==0)
+                    map.remove(gems[left]);
+                left++;
+            }
+            else if(right==gemsLen) {
+                break;
+            }
+            else{
+                map.put(gems[right], map.getOrDefault(gems[right++], 0) + 1);
             }
 
-            if(hm.size()==kinds.size() && min_distance>q.size()){
-                min_distance = q.size();
-                start = tmp_start;
+            if(right-left < len && map.size()==typeSize){
+                len = right - left;
+                start = left + 1;
+                end = right;
             }
         }
 
-        return new int[]{start+1, start+min_distance};
+        return new int[]{start, end};
+    }
+
+    static void getTypes(String[] gems){
+        types.addAll(Arrays.asList(gems));
     }
 
     public static void main(String args[]) throws IOException {
         BufferedWriter bfw = new BufferedWriter(new OutputStreamWriter(System.out));
-        String[] gems = {"AA", "AB", "AC", "AA", "AC"};
+        String[] gems = {"A", "B" ,"B", "C", "A", "B", "C", "A","B","C"};
         int[] answer = solution(gems);
         bfw.write(answer[0] + " " +answer[1]);
         bfw.close();
