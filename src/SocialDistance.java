@@ -1,70 +1,70 @@
 import java.io.*;
 
 public class SocialDistance {
-    static char[][] cur_room = new char[5][5]; // 방 하나 정보 받을 배열
-    static int[][] move = { {0,-2}, {-2,0}, {0,2}, {2,0}, {0,-1}, {-1,-1},
-            {-1,0}, {-1,1}, {0,1}, {1,1}, {1,0}, {1,-1} }; // 맨해튼 거리가 1,2인 모든 움직임
+    static int[][] move = { {0,-2}, {-2,0}, {0,2}, {2,0}, {0,-1}, {-1,-1}, {-1,0}, {-1,1}, {0,1}, {1,1}, {1,0}, {1,-1} };
 
-    static int[] solution(String[][] places) {
+    static int[] solution(String[][] places){
         int[] answer = new int[5];
-
-        for(int room_num=0; room_num<5; room_num++){
-            for(int row=0; row<5; row++){
-                cur_room[row] = places[room_num][row].toCharArray(); // 방 정보 받기
-            }
-            answer[room_num] = isDistanceAlright();
+        int i = 0;
+        for(String[] place: places){
+            answer[i++] = checkPlace(place);
         }
-
         return answer;
     }
 
-    static Integer isDistanceAlright(){
+    static Integer checkPlace(String[] place){
+        int result = 1;
         boolean[][] visited = new boolean[5][5];
 
         for(int r=0; r<5; r++){
             for(int c=0; c<5; c++){
-                if(cur_room[r][c]!='P') continue;
+                char cur = place[r].charAt(c);
+
+                if(cur!='P' || visited[r][c])   continue; // 응시자 아니거나 이미 방문한 응시자면 패
 
                 for(int dir=0; dir<12; dir++){
-                    int n_row = r + move[dir][0];   int n_col = c + move[dir][1];
-                    if(!isInRagne(n_row,n_col)) continue; // 범위 밖이면 패스
-                    if(cur_room[n_row][n_col]!='P') continue; // 사람 없으면 패스
-                    if(visited[n_row][n_col])   continue;   // 이미 검사한 사람이면 패스
-                    if(dir==4 || dir==6 || dir==8 || dir==10)   return 0; // 바로 옆에 사람 붙어있으면 규칙 위반
+                    int n_row = r + move[dir][0];
+                    int n_col = c + move[dir][1];
 
-                    if(!isBlockedPath(r,c,dir)) return 0;
+                    if(n_row<0 || n_row>=5 || n_col<0 || n_col>=5)  continue; // 범위 밖이면 패스
+
+                    if(place[n_row].charAt(n_col)=='P'){ // 맨해튼 거리 2 이하인 지점에 다른 응시자 있으면
+                        switch(dir){
+                            case 4: case 6: case 8: case 10: // 바로 붙어있는 곳에 응시자 있으면 바로 조건 탈락
+                                return 0;
+
+                            case 0:
+                                if(place[r].charAt(c-1)=='O')   return 0;
+                                break;
+                            case 1:
+                                if(place[r-1].charAt(c)=='O')   return 0;
+                                break;
+                            case 2:
+                                if(place[r].charAt(c+1)=='O')   return 0;
+                                break;
+                            case 3:
+                                if(place[r+1].charAt(c)=='O')   return 0;
+                                break;
+                            case 5:
+                                if(place[r].charAt(c-1)=='O' || place[r-1].charAt(c)=='O')  return 0;
+                                break;
+                            case 7:
+                                if(place[r-1].charAt(c)=='O' || place[r].charAt(c+1)=='O')  return 0;
+                                break;
+                            case 9:
+                                if(place[r].charAt(c+1)=='O' || place[r+1].charAt(c)=='O')  return 0;
+                                break;
+                            case 11:
+                                if(place[r+1].charAt(c)=='O' || place[r].charAt(c-1)=='O')  return 0;
+                                break;
+                        }
+                    }
+                    else    continue;
                 }
                 visited[r][c] = true;
             }
         }
-        return 1;
-    }
-
-    static Boolean isBlockedPath(int r, int c, int dir){
-        switch(dir){
-            case 0:
-                return (cur_room[r+move[4][0]][c+move[4][1]] == 'X');
-            case 1:
-                return (cur_room[r+move[6][0]][c+move[6][1]] == 'X');
-            case 2:
-                return (cur_room[r+move[8][0]][c+move[8][1]] == 'X');
-            case 3:
-                return (cur_room[r+move[10][0]][c+move[10][1]] == 'X');
-            case 5:
-                return ((cur_room[r+move[4][0]][c+move[4][1]] == 'X') && (cur_room[r+move[6][0]][c+move[6][1]] == 'X'));
-            case 7:
-                return ((cur_room[r+move[6][0]][c+move[6][1]] == 'X') && (cur_room[r+move[8][0]][c+move[8][1]] == 'X'));
-            case 9:
-                return ((cur_room[r+move[8][0]][c+move[8][1]] == 'X') && (cur_room[r+move[10][0]][c+move[10][1]] == 'X'));
-            case 11:
-                return ((cur_room[r+move[4][0]][c+move[4][1]] == 'X') && (cur_room[r+move[10][0]][c+move[10][1]] == 'X'));
-        }
-        return false;
-    }
-
-    static Boolean isInRagne(int row, int col){
-        if(row<0 || row>=5 || col<0 || col>=5)  return false;
-        return true;
+        return result;
     }
 
     public static void main(String args[]) throws IOException {
