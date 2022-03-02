@@ -31,13 +31,13 @@ public class TableEditing {
                     if (list.get(restoredPos).next != -1)
                         list.get(list.get(restoredPos).next).prev = restoredPos;
                     break;
-                case "U": {
+                case "U": { // up
                     int distance = Integer.parseInt(stk.nextToken());
                     while (distance-- > 0)
                         k = list.get(k).prev;
                     break;
                 }
-                default: {
+                default: { // down
                     int distance = Integer.parseInt(stk.nextToken());
                     while (distance-- > 0)
                         k = list.get(k).next;
