@@ -3,7 +3,7 @@ import java.io.*;
 
 public class RaceTrack {
     static int[][][] visited; // 4 방향별 방문 정보
-    static int[][] dir = { {-1,0}, {1,0}, {0,-1}, {0,1} }; // 상하좌우
+    static int[][] dir = { {-1,0}, {1,0}, {0,-1}, {0,1} }; // 상 하 좌 우
 
     static int solution(int[][] board) {
         int n = board.length;
