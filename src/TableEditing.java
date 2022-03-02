@@ -1,65 +1,70 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
 public class TableEditing {
-    static Stack<int[]> stack = new Stack<>();
-    static int curPos;
-    static int[] prevPos, nextPos;
-    static StringBuilder sb = new StringBuilder();
+    static ArrayList<Info> list = new ArrayList<>();
 
     static String solution(int n, int k, String[] cmd) {
-        init(n, k);
-        operateOrder(cmd);
+        init(n);
+        StringBuilder sb = new StringBuilder();
+        Stack<Integer> deleted = new Stack<>();
 
+        for(String thisCmd: cmd){
+            StringTokenizer stk = new StringTokenizer(thisCmd);
+            String order = stk.nextToken();
+            switch (order) {
+                case "C":  // 삭제
+                    list.get(k).status = 0;
+                    deleted.add(k);
+                    if (list.get(k).prev != -1) list.get(list.get(k).prev).next = list.get(k).next;
+                    if (list.get(k).next != -1) list.get(list.get(k).next).prev = list.get(k).prev;
+
+                    k = (list.get(k).next == -1 ? list.get(k).prev : list.get(k).next); // 마지막 셀이면 그 전으로, 아니면 그 후로
+                    break;
+                case "Z":  // 복구
+                    int restoredPos = deleted.pop();
+                    list.get(restoredPos).status = 1;
+                    if (list.get(restoredPos).prev != -1)
+                        list.get(list.get(restoredPos).prev).next = restoredPos;
+                    if (list.get(restoredPos).next != -1)
+                        list.get(list.get(restoredPos).next).prev = restoredPos;
+                    break;
+                case "U": {
+                    int distance = Integer.parseInt(stk.nextToken());
+                    while (distance-- > 0)
+                        k = list.get(k).prev;
+                    break;
+                }
+                default: {
+                    int distance = Integer.parseInt(stk.nextToken());
+                    while (distance-- > 0)
+                        k = list.get(k).next;
+                    break;
+                }
+            }
+        }
+
+        for(int i=0; i<n; i++)
+            sb.append((list.get(i).status==1 ? 'O' : 'X'));
         return sb.toString();
     }
 
-    static void operateOrder(String[] cmd){
-        for(String order: cmd){
-            StringTokenizer stk = new StringTokenizer(order);
-            int howFar = 0;
-            switch(stk.nextToken()){
-                case "C":
-                    stack.add(new int[]{prevPos[curPos], curPos, nextPos[curPos]});
-                    if(prevPos[curPos]!=-1) nextPos[prevPos[curPos]] = nextPos[curPos];
-                    if(nextPos[curPos]!=-1) prevPos[nextPos[curPos]] = prevPos[curPos];
-
-                    sb.setCharAt(curPos, 'X');
-                    if(nextPos[curPos]!=-1) curPos = nextPos[curPos];
-                    else    curPos = prevPos[curPos]; // 맨 밑 칸이면 위로 올리기
-                    break;
-
-                case "Z":
-                    int[] restore = stack.pop();
-                    if(restore[0]!=-1)  nextPos[restore[0]] = restore[1];
-                    if(restore[2]!=-1)  prevPos[restore[2]] = restore[1];
-                    sb.setCharAt(restore[1], 'O');
-                    break;
-
-                case "U":
-                    howFar = Integer.parseInt(stk.nextToken());
-                    while(howFar-- > 0) curPos = prevPos[curPos];
-                    break;
-
-                case "D":
-                    howFar = Integer.parseInt(stk.nextToken());
-                    while(howFar-- > 0) curPos = nextPos[curPos];
-                    break;
-            }
-        }
+    static void init(int n){
+        for(int i=0; i<=n-2; i++)
+            list.add(new Info(i-1, i+1, 1));
+        list.add(new Info(n-2, -1, 1));
     }
 
-    static void init(int n, int k){
-        curPos = k;
+    static class Info{
+        int prev, next, status;
 
-        prevPos = new int[n];   nextPos = new int[n];
-        for(int i=0; i<n; i++){
-            prevPos[i] = i-1;
-            nextPos[i] = i+1;
-            sb.append('O');
+        Info(int prev, int next, int status){
+            this.prev = prev;
+            this.next = next;
+            this.status = status;
         }
-        nextPos[n-1] = -1;
     }
 
     public static void main(String args[]) throws IOException {
@@ -67,7 +72,8 @@ public class TableEditing {
         int n = 8; int k = 2;
         String[] cmd = { "D 2", "C", "U 3", "C", "D 4", "C", "U 2", "Z", "Z", "U 1", "C" };
 
-        bfw.write(solution(n,k,cmd));
+        String res = solution(n,k,cmd);
+        bfw.write(res);
         bfw.close();
     }
 }
