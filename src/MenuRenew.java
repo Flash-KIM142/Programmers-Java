@@ -1,64 +1,47 @@
 import java.util.*;
 
 public class MenuRenew {
-    static HashMap<String, Integer> map = new HashMap<>();
-    static HashSet<String> set = new HashSet<>();
+    static HashMap<String, Integer> hm = new HashMap<>();
+    static int max;
 
-    static String[] solution(String[] orders, int[] course) {
-        for(String order: orders){
-            boolean[] visited = new boolean[order.length()];
-            for(int i=0; i<course.length; i++)
-                combination(createSortedString(order), visited, 0, course[i]);
-        }
+    static String[] solution(String[] orders, int[] course){
+        PriorityQueue<String> q = new PriorityQueue<>();
 
-        for(int i=0; i<course.length; i++){
-            int length = course[i];
-            int max = 0;
-            HashSet<String> tmpSet = new HashSet<>();
-            for(String key: map.keySet()){
-                if(key.length()!=length)    continue;
-                if(map.get(key)==max)   tmpSet.add(key);
-                else if(map.get(key)>max && map.get(key)>1){
-                    tmpSet.clear();
-                    tmpSet.add(key);
-                    max = map.get(key);
+        for(int len: course){
+            max = 0;
+            hm = new HashMap<>();
+            for(String order: orders){
+                combination(0, len, "", 0, order);
+            }
+            for(String newMenu: hm.keySet()){
+                if(hm.get(newMenu)==max && max>1){
+                    q.add(newMenu);
                 }
             }
-            set.addAll(tmpSet);
         }
 
-        String[] answer = set.toArray(new String[set.size()]);
-        Arrays.sort(answer);
+        String[] answer = new String[q.size()];
+        int i=0;
+        while(!q.isEmpty())
+            answer[i++] = q.poll();
+
         return answer;
     }
 
-    static void combination(String order, boolean[] visited, int cur, int r){
-        if(r==0){
-            String comb = "";
-            for(int i=0; i<visited.length; i++)
-                if(visited[i])  comb += order.charAt(i);
-
-            if(map.containsKey(comb))   map.put(comb, map.get(comb)+1);
-            else    map.put(comb, 1);
-            return;
+    static void combination(int cnt, int len, String res, int idx, String order){
+        if(cnt==len){
+            char[] menus = res.toCharArray();
+            Arrays.sort(menus);
+            String newMenu = "";
+            for(char unitMenu: menus)
+                newMenu += unitMenu;
+            hm.put(newMenu, hm.getOrDefault(newMenu, 0) + 1);
+            max = Math.max(hm.get(newMenu), max);
         }
-        for(int i=cur; i<order.length(); i++){
-            visited[i] = true;
-            combination(order, visited, i+1, r-1);
-            visited[i] = false;
+        for(int i=idx; i<order.length(); i++){
+            char tmp = order.charAt(i);
+            combination(cnt+1, len, res + tmp, i+1, order);
         }
-    }
-
-    static String createSortedString(String s){
-        String res = "";
-        ArrayList<Character> list = new ArrayList<>();
-        for(int i=0; i<s.length(); i++)
-            list.add(s.charAt(i));
-        Collections.sort(list);
-        for(char ch: list)
-            res += ch;
-
-        return res;
     }
 
     public static void main(String[] args) {
