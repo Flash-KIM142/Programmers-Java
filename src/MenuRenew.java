@@ -10,21 +10,17 @@ public class MenuRenew {
         for(int len: course){
             max = 0;
             hm = new HashMap<>();
-            for(String order: orders){
+            for(String order: orders)
                 combination(0, len, "", 0, order);
-            }
-            for(String newMenu: hm.keySet()){
-                if(hm.get(newMenu)==max && max>1){
+
+            for(String newMenu: hm.keySet())
+                if(hm.get(newMenu)==max && max>1)
                     q.add(newMenu);
-                }
-            }
         }
 
         String[] answer = new String[q.size()];
         int i=0;
-        while(!q.isEmpty())
-            answer[i++] = q.poll();
-
+        while(!q.isEmpty()) answer[i++] = q.poll();
         return answer;
     }
 
@@ -45,7 +41,7 @@ public class MenuRenew {
     }
 
     public static void main(String[] args) {
-        String[] orders = {"XYZ", "XWY", "WXA"};
+        String[] orders = {"ABCFG", "AC", "CDE", "ACDE", "BCFG", "ACDEH"};
         int[] course = {2, 3, 4};
         String[] answer = solution(orders, course);
         for(String s: answer) System.out.println(s);
