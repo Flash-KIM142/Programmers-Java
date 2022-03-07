@@ -1,53 +1,51 @@
 import java.util.*;
 
 public class RankSearch {
-    static HashMap<String, ArrayList<Integer>> applyMap = new HashMap<>();
+    static HashMap<String, ArrayList<Integer>> hm = new HashMap<>();
 
-    static int[] solution(String[] info, String[] query) {
-        int[] answer = new int[query.length];
-        for(String a: info){ // 가능한 모든 조합 만들기
-            String[] apply = a.split(" ");
-            combination(apply, "", 0);
+    static int[] solution(String[] info, String[] query){
+        for (String value : info) {
+            String[] split = value.split(" ");
+            combination(split, "", 0);
         }
 
-        for(String key: applyMap.keySet()) // 가능한 조합들 각각의 점수 리스트를 오름차순 정렬하자
-            Collections.sort(applyMap.get(key));
+        int[] answer = new int[query.length];
+        for(String key: hm.keySet())
+            Collections.sort(hm.get(key));
 
         int idx = 0;
-        for(String q: query){ // 쿼리 배열 순회하며 가능한 조합들 applyMap에서 찾아주기
-            q = q.replaceAll(" and ", "");
-            String[] hire = q.split(" ");
-            int score = Integer.parseInt(hire[1]);
-            answer[idx++] = applyMap.containsKey(hire[0]) ? binarySearch(hire[0], score) : 0;
+        for(String value: query){
+            value = value.replaceAll(" and ", "");
+            String[] split = value.split(" ");
+            int score = Integer.parseInt(split[1]);
+            answer[idx++] = hm.containsKey(split[0]) ? binarySearch(split[0], score) : 0;
         }
-
         return answer;
     }
 
-    static void combination(String[] apply, String aCase, int cnt){
-        if(cnt==4){
-            if(!applyMap.containsKey(aCase)){
-                ArrayList<Integer> tmp = new ArrayList<>();
-                applyMap.put(aCase, tmp);
-            }
-            applyMap.get(aCase).add(Integer.parseInt(apply[4]));
-            return;
-        }
-        combination(apply, aCase + "-", cnt+1);
-        combination(apply, aCase + apply[cnt], cnt+1);
-    }
-
-    static Integer binarySearch(String s, int score){
-        ArrayList<Integer> cases = applyMap.get(s);
-        int left = 0; int right = cases.size()-1;
+    static Integer binarySearch(String query, int score){
+        ArrayList<Integer> target = hm.get(query);
+        int left = 0; int right = target.size() - 1;
 
         while(left<=right){
             int mid = (left+right)/2;
-
-            if(cases.get(mid)<score)    left = mid + 1;
+            if(target.get(mid)<score)   left = mid + 1;
             else    right = mid - 1;
         }
-        return cases.size() - left;
+        return target.size() - left;
+    }
+
+    static void combination(String[] infos, String oneCase, int cnt){
+        if(cnt==4){
+            if(!hm.containsKey(oneCase)){
+                ArrayList<Integer> scores = new ArrayList<>();
+                hm.put(oneCase, scores);
+            }
+            hm.get(oneCase).add(Integer.parseInt(infos[4]));
+            return;
+        }
+        combination(infos, oneCase + "-", cnt+1);
+        combination(infos, oneCase + infos[cnt], cnt+1);
     }
 
     public static void main(String[] args) {
