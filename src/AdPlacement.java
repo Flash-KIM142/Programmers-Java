@@ -1,62 +1,60 @@
 public class AdPlacement {
+    static String solution(String play_time, String adv_time, String[] logs){
+        if(play_time.equals(adv_time))  return "00:00:00";
 
-    static String solution(String play_time, String adv_time, String[] logs) {
-        int playTime = timeToSeconds(play_time);
-        int advTime = timeToSeconds(adv_time);
-        if(playTime==advTime)   return "00:00:00";
-        int[] visited = new int[playTime+1];
+        int playSecs = fromTimeToSec(play_time);
+        int advSecs = fromTimeToSec(adv_time);
 
+        int[] visited = new int[playSecs+1];
         for(String log: logs){
-            String[] times = log.split("-");
-            int start = timeToSeconds(times[0]);
-            int end = timeToSeconds(times[1]);
+            String[] split = log.split("-");
+            int startSecs = fromTimeToSec(split[0]);
+            int endSecs = fromTimeToSec(split[1]);
 
-            for(int i=start; i<end; i++)
+            for(int i=startSecs; i<endSecs; i++)
                 visited[i]++;
         }
-        /** 초기값 세팅 */
+
+        long tmpOverlap = 0;
         int start = 0;
-        int end = advTime;
-        long sum = 0;
+        int end = advSecs;
         for(int i=start; i<end; i++)
-            sum += visited[i];
+            tmpOverlap += visited[i];
 
-        /** 최대 누적 구간의 시작점 찾기 */
-        long max = sum;
-        long maxStart = start;
-        while(end<=playTime){
-            sum -= visited[start];
-            sum += visited[end];
+        long realOverlap = tmpOverlap;
+        int maxStart = start;
+        while(end<=playSecs){
+            tmpOverlap -= visited[start];
+            tmpOverlap += visited[end];
 
-            if(sum>max){
-                max = sum;
-                maxStart = start + 1;
+            if(tmpOverlap>realOverlap){
+                realOverlap = tmpOverlap;
+                maxStart = start+1;
             }
-
             start++;
             end++;
         }
 
-        return secondsToTime(maxStart);
+        return fromSecToTime(maxStart);
     }
 
-    static Integer timeToSeconds(String time){
+    static Integer fromTimeToSec(String time){
         String[] split = time.split(":");
         int hrs = Integer.parseInt(split[0]);
         int mins = Integer.parseInt(split[1]);
         int secs = Integer.parseInt(split[2]);
-
         return hrs*3600 + mins*60 + secs;
     }
 
-    static String secondsToTime(long seconds){
-        int hrs = (int)seconds / 3600;
-        int rest = (int)seconds % 3600;
-        int mins = rest / 60;
-        rest %= 60;
-        int secs = rest;
-
-        return String.format("%02d:%02d:%02d", hrs, mins, secs);
+    static String fromSecToTime(int startSecs){
+        int secs = startSecs % 60;
+        String secsStr = String.format("%02d", secs);
+        startSecs /= 60;
+        int mins = startSecs % 60;
+        String minsStr = String.format("%02d", mins);
+        startSecs /= 60;
+        String hrsStr = String.format("%02d", startSecs);
+        return hrsStr + ":" + minsStr + ":" + secsStr;
     }
 
     public static void main(String[] args) {
