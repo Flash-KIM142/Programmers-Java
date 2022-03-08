@@ -1,91 +1,78 @@
-import java.util.ArrayList;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class TaxiFee {
     static int[][] dist;
     static ArrayList<Node>[] edges;
+    static final int INF = Integer.MAX_VALUE;
 
-    static int solution(int n, int s, int a, int b, int[][] fares) {
-        int answer = 0;
-
-        /** 각 정점에 대한 최소 비용 배열 초기화 */
-        distInit(n);
-
-        /** 가중치 간선 정보 저장하기 */
+    static Integer solution(int n, int s, int a, int b, int[][] fares){
         edgesInit(n, fares);
+        dist = new int[n+1][n+1];
+        for(int i=1; i<=n; i++)
+            dist[i] = dijkstra(i, n);
 
-        /** 다익스트라 알고리즘 이용해서 모든 정점에 대해
-         * 자기 자신 제외한 다른 정점까지의 최소 비용 구하기 */
-        getDistance(n);
-
-        /** 합승할 경우 최소 비용 구하기 */
-        answer = getCarPoolFee(n,s,a,b);
+        int answer = dist[s][a] + dist[s][b];
+        for(int i=1; i<=n; i++)
+            answer = Math.min(answer, dist[s][i]+dist[i][a]+dist[i][b]);
 
         return answer;
     }
 
-    static void distInit(int n) {
-        dist = new int[n + 1][n + 1];
-        for (int i = 0; i < n + 1; i++)
-            for (int j = 0; j < n + 1; j++)
-                dist[i][j] = Integer.MAX_VALUE;
+    static int[] dijkstra(int start, int n){
+        int[] tmpDist = new int[n+1];
+        for(int i=1; i<=n; i++)
+            tmpDist[i] = INF;
+        tmpDist[start] = 0;
+
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        pq.offer(new Node(start, 0));
+
+        while(!pq.isEmpty()){
+            Node tmp = pq.poll();
+            int cur_pos = tmp.idx;
+            int cur_weight = tmp.weight;
+            if(tmpDist[cur_pos]<cur_weight) continue;
+
+            ArrayList<Node> next_nodes = edges[cur_pos];
+            for(Node next: next_nodes){
+                int next_pos = next.idx;
+                int next_weight = next.weight;
+
+                if(tmpDist[next_pos] > cur_weight + next_weight){
+                    tmpDist[next_pos] = cur_weight + next_weight;
+                    pq.offer(new Node(next_pos, tmpDist[next_pos]));
+                }
+            }
+        }
+        return tmpDist;
+    }
+
+    static class Node implements Comparable<Node> {
+        int idx;
+        int weight;
+
+        Node(int idx, int weight){
+            this.idx = idx;
+            this.weight = weight;
+        }
+
+        @Override
+        public int compareTo(Node cmp){
+            return this.weight - cmp.weight;
+        }
     }
 
     static void edgesInit(int n, int[][] fares){
-        edges = new ArrayList[n + 1];
-        for (int i = 0; i < n + 1; i++) edges[i] = new ArrayList<>(); // 초기화
+        edges = new ArrayList[n+1];
+        for(int i=1; i<=n; i++)
+            edges[i] = new ArrayList<Node>();
 
-        for (int[] fare : fares) { // 간선 정보 저장하기
+        for(int[] fare: fares){
             int start = fare[0];
             int end = fare[1];
             int weight = fare[2];
             edges[start].add(new Node(end, weight));
             edges[end].add(new Node(start, weight));
-        }
-    }
-
-    static void getDistance(int n){
-        for(int i=1; i<=n; i++){
-            dist[i][i] = 0; // 자기 자신에게 가는 비용은 당연히 0
-            PriorityQueue<Node> q = new PriorityQueue<>();
-            q.offer(new Node(i,0));
-
-            while(!q.isEmpty()){
-                Node cur = q.poll();
-                if(dist[i][cur.end] < cur.cost)    continue; // 이미 최소비용이면 패스
-
-                for(int j=0; j<edges[cur.end].size(); j++){
-                    Node next = edges[cur.end].get(j);
-
-                    if(dist[i][next.end] > cur.cost + next.cost){
-                        dist[i][next.end] = cur.cost + next.cost;
-                        q.offer(new Node(next.end, cur.cost + next.cost));
-                    }
-                }
-            }
-        }
-    }
-
-    static Integer getCarPoolFee(int n, int s, int a, int b){
-        int min = Integer.MAX_VALUE;
-        for(int i=1; i<=n; i++){
-            min = Math.min(min, dist[s][i] + dist[i][a] + dist[i][b]);
-        }
-        return min;
-    }
-
-    static class Node implements Comparable<Node> {
-        int end;
-        int cost;
-
-        Node(int end, int cost) {
-            this.end = end;
-            this.cost = cost;
-        }
-
-        @Override
-        public int compareTo(Node next) {
-            return this.cost - next.cost;
         }
     }
 
