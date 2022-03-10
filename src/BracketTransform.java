@@ -1,60 +1,51 @@
-import java.io.*;
-import java.util.Stack;
+class BracketTransform{
+    static String solution(String p){
+        return recursion(p);
+    }
 
-public class BracketTransform {
-    static String solution(String p) {
-        String answer = "";
-        if(p.equals("")) return answer; // 비었으면 바로 return
+    static String recursion(String p){
+        if(p.equals(""))    return "";
+        StringBuilder sb = new StringBuilder();
+        String v = "";
 
-        String u="",v="";
-        int open = 0, close = 0;
-        for(int i=0; i<p.length(); i++){
-            if(p.charAt(i)=='(') open++;
-            else    close++;
-            if(open==close){
-                u = p.substring(0,i+1);
-                v = p.substring(i+1);
+        int balance = 0;
+        if(p.charAt(0)=='(')    balance++;
+        else    balance--;
+        sb.append(p.charAt(0));
+
+        for(int i=1; i<p.length(); i++){
+            if(p.charAt(i)=='(')    balance++;
+            else    balance--;
+            sb.append(p.charAt(i));
+
+            if(balance==0) {
+                if(i+1<p.length())
+                    v = p.substring(i + 1);
                 break;
             }
         }
 
-        if(isRight(u)){
-            answer = u + solution(v);
-        }
-        else{
-            u = u.substring(1,u.length()-1);
-            StringBuilder sb = new StringBuilder();
-            for(int i=0; i<u.length(); i++){
-                if(u.charAt(i)=='(')    sb.append(')');
-                else    sb.append('(');
-            }
-            u = sb.toString();
-            answer = "(" + solution(v) + ")" + u;
-        }
-
-        return answer;
+        if(sb.toString().charAt(0)=='(')    return sb +recursion(v);
+        else    return reverse(sb.toString(), v);
     }
 
-    static Boolean isRight(String s){
-        Stack<Character> stack = new Stack<>();
-        for(int i=0; i<s.length(); i++){
-            char cur = s.charAt(i);
-            if(stack.size()==0) stack.add(cur);
-            else{
-                char top = stack.peek();
-                if(top=='(' && cur==')')    stack.pop();
-                else    stack.add(cur);
-            }
+    static String reverse(String u, String v){
+        StringBuilder sb = new StringBuilder();
+        sb.append('(');
+        sb.append(recursion(v));
+        sb.append(')');
+
+        u = u.substring(1, u.length()-1);
+        for(int i=0; i<u.length(); i++){
+            if(u.charAt(i)=='(')    sb.append(')');
+            else    sb.append('(');
         }
 
-        return stack.size()==0 ? true : false;
+        return sb.toString();
     }
 
-    public static void main(String[] args) throws IOException {
-        BufferedWriter bfw = new BufferedWriter(new OutputStreamWriter(System.out));
-        String p = "()))((()";
-        String answer = solution(p);
-        bfw.write(answer);
-        bfw.close();
+    public static void main(String[] args) {
+        String p = ")(";
+        System.out.println(solution(p));
     }
 }
