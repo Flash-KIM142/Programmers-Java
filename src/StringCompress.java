@@ -1,20 +1,19 @@
 import java.io.*;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 public class StringCompress {
-    static int solution(String s) {
-        int answer = s.length();
-        int len = s.length();
-        
-        for (int i = 1; i <= len / 2; i++) {
-            int res = compressor(i, s);
-            answer = (res < answer ? res : answer);
+    static ArrayList<Integer> list = new ArrayList<>();
+
+    static int solution(String s){
+        if(s.length()==1)   return 1;
+        for(int i=1; i<=s.length()/2; i++){
+            compress(i, s);
         }
-        return answer;
+        Collections.sort(list);
+        return list.get(0);
     }
 
-    static Integer compressor(int n, String s) {
+    static void compress(int n, String s){
         StringBuilder sb = new StringBuilder();
         Queue<String> q = new LinkedList<>();
 
@@ -32,22 +31,21 @@ public class StringCompress {
             if(cur.equals(prev)) i++;
             else{
                 if(i==1)    sb.append(prev);
-                else    sb.append(i+prev);
+                else    sb.append(i).append(prev);
                 i = 1;
             }
             prev = cur;
             if(q.size()==0){
                 if(i==1)    sb.append(cur);
-                else    sb.append(i+cur);
+                else    sb.append(i).append(cur);
             }
         }
-
-        return sb.toString().length();
+        list.add(sb.toString().length());
     }
 
     public static void main(String[] args) throws IOException {
         BufferedWriter bfw = new BufferedWriter(new OutputStreamWriter(System.out));
-        String s = "abcabcabcabcdededededede";
+        String s = "a";
         int ans = solution(s);
         bfw.write(ans + "");
         bfw.close();
