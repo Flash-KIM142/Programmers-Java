@@ -1,66 +1,64 @@
-public class LockAndKey {
-    static int[][][] keys = new int[4][][];
-    static int[][] extendedLock;
+import java.util.ArrayList;
 
-    static boolean solution(int[][] key, int[][] lock) {
-        keys[0] = key;
-        keys[1] = rotateKey(key);
-        keys[2] = rotateKey(keys[1]);
-        keys[3] = rotateKey(keys[2]);
+class LockAndKey{
+    static int[][] extended_lock;
+    static ArrayList<int[][]> totalKeys = new ArrayList<>();
+    static int n,m;
 
-        int extension = key.length-1;
-        extendedLock = new int[lock.length + 2*extension][lock.length + 2*extension];
+    static boolean solution(int[][] key, int[][] lock){
+        n = lock.length;
+        m = key.length;
+        int new_size = 3 * lock.length - 2;
+        extended_lock = new int[new_size][new_size];
+        createTotalKeys(key);
 
-        for(int i=0; i<lock.length+extension; i++){ // 겹치는 부분 처리
-            for(int j=0; j<lock.length+extension; j++){ // 겹치는 부분 처리
-                for(int k=0; k<4; k++){ // key 종류 네 개
-                    for(int r=0; r<lock.length; r++){ // 확장된 자물쇠 만들기
-                        for(int c=0; c<lock.length; c++){
-                            extendedLock[r+extension][c+extension] = lock[r][c];
+        for(int r=0; r<2*n-1; r++){
+            for(int c=0; c<2*n-1; c++){
+                for(int[][] cur_key: totalKeys){
+                    for(int n_r=0; n_r<n; n_r++){
+                        for(int n_c=0; n_c<n; n_c++){
+                            extended_lock[n_r+n-1][n_c+n-1] = lock[n_r][n_c];
                         }
                     }
-                    setExtendedLock(i,j,keys[k]);
-                    if(isOpen(extendedLock, extension, lock.length))    return true;
+                    if(overlap(cur_key, r, c))  return true;
                 }
             }
         }
-
         return false;
     }
 
-    static int[][] rotateKey(int[][] src){
-        int n = src.length;
-        int[][] res = new int[n][n];
+    static boolean overlap(int[][] key, int r, int c){
+        for(int i=0; i<m; i++)
+            for(int j=0; j<m; j++)
+                extended_lock[r+i][c+j] += key[i][j];
 
-        int r=0,c=0;
-        for(int col=0; col<n; col++) {
-            for(int row=n-1; row>=0; row--){
-                res[r][c] = src[row][col];
-                c++;
-            }
-            r++;    c=0;
-        }
-        return res;
-    }
-
-    static void setExtendedLock(int r, int c, int[][] key){
-        int len = key.length;
-        for(int i=0; i<len; i++)
-            for(int j=0; j<len; j++)
-                extendedLock[r+i][c+j] += key[i][j];
-    }
-
-    static Boolean isOpen(int[][] map, int ext, int len){
-        for(int i=0; i<len; i++)
-            for(int j=0; j<len; j++)
-                if(map[i+ext][j+ext] != 1) return false;
+        for(int i=0; i<n; i++)
+            for(int j=0; j<n; j++)
+                if(extended_lock[n+i-1][n+j-1]!=1)  return false;
 
         return true;
+    }
+
+    static void createTotalKeys(int[][] org){
+        totalKeys.add(org);
+        totalKeys.add(rotateKey(totalKeys.get(totalKeys.size()-1)));
+        totalKeys.add(rotateKey(totalKeys.get(totalKeys.size()-1)));
+        totalKeys.add(rotateKey(totalKeys.get(totalKeys.size()-1)));
+    }
+
+    static int[][] rotateKey(int[][] key){
+        int[][] r90 = new int[m][m];
+        for(int r=0; r<m; r++)
+            for(int c=0; c<m; c++)
+                r90[r][c] = key[m-1-c][r];
+
+        return r90;
     }
 
     public static void main(String[] args) {
         int[][] key = {{0, 0, 0}, {1, 0, 0}, {0, 1, 1}};
         int[][] lock = {{1, 1, 1}, {1, 1, 0}, {1, 0, 1}};
-        System.out.println(solution(key, lock));
+        boolean res = solution(key, lock);
+        System.out.println(res);
     }
 }
