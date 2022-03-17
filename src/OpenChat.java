@@ -1,51 +1,49 @@
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 public class OpenChat {
-    static HashMap<String, String> uidName = new HashMap<>();
-    static LinkedList<String[]> uidAction = new LinkedList<>(); // Enter:1, Leave:2, Change:3
+    static HashMap<String, String> map = new HashMap<>();
+    static ArrayList<String[]> msg = new ArrayList<>();
 
-    static String[] solution(String[] record) {
-        operateOrder(record);
-        String[] answer = new String[uidAction.size()];
-        int msgIdx = 0;
+    static String[] solution(String[] record){
+        for(String r: record){
+            StringTokenizer stk = new StringTokenizer(r);
+            String cmd = stk.nextToken();
+            String uid = stk.nextToken();
+            String nickname = "";
 
-        for(String[] msg: uidAction){
-            String uid = msg[0];
-            int actionNum = Integer.parseInt(msg[1]);
-            switch(actionNum){
-                case 1: // 입장
-                    answer[msgIdx] = uidName.get(uid) + "님이 들어왔습니다.";
-                    break;
-                case 2: // 퇴장
-                    answer[msgIdx] = uidName.get(uid) + "님이 나갔습니다.";
-                    break;
+            if(cmd.equals("Enter")){ // 입장
+                nickname = stk.nextToken();
+                if(!map.containsKey(uid))
+                    map.put(uid, nickname);
+                else
+                    map.replace(uid, nickname);
+
+                String[] tmp = { cmd, uid };
+                msg.add(tmp);
             }
-            msgIdx++;
+            else if(cmd.equals("Change")){ // 변경
+                nickname = stk.nextToken();
+                map.replace(uid, nickname);
+            }else{ // 퇴장
+                String[] tmp = { cmd, uid };
+                msg.add(tmp);
+            }
+        }
+
+        String[] answer = new String[msg.size()];
+        int idx = 0;
+        for(String[] tmp: msg){
+            String cmd = tmp[0];
+            String uid = tmp[1];
+
+            if(cmd.equals("Enter"))
+                answer[idx++] = map.get(uid) + "님이 들어왔습니다.";
+            else
+                answer[idx++] = map.get(uid) + "님이 나갔습니다.";
         }
         return answer;
-    }
-
-    static void operateOrder(String[] record){
-        for(String order: record){
-            StringTokenizer stk = new StringTokenizer(order);
-            String action = stk.nextToken();
-            String uid = stk.nextToken();
-
-            switch(action){
-                case "Enter": // action1
-                    uidName.put(uid, stk.nextToken());
-                    uidAction.add(new String[]{uid, "1"});
-                    break;
-                case "Leave": // action2
-                    uidAction.add(new String[]{uid, "2"});
-                    break;
-                case "Change": // action3
-                    uidName.put(uid, stk.nextToken());
-                    break;
-            }
-        }
     }
 
     public static void main(String args[]) {
