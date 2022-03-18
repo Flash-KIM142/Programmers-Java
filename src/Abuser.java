@@ -1,64 +1,59 @@
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Abuser {
     static HashSet<String> set = new HashSet<>();
-    static ArrayList<Integer>[] possibleAbusers;
     static boolean[] visited;
+    static ArrayList<Integer>[] list;
 
     static int solution(String[] user_id, String[] banned_id) {
         visited = new boolean[user_id.length];
-        possibleAbusers = createPossibleAbusers(user_id, banned_id);
-        backTracking(0, user_id.length, banned_id.length);
+        list = new ArrayList[banned_id.length];
+        for (int i=0; i<banned_id.length; i++) {
+            ArrayList<Integer> tmp = new ArrayList<>();
+            String ban = banned_id[i];
+            for (int j = 0; j < user_id.length; j++) {
+                String cur = user_id[j];
+                if (cur.length() != ban.length()) continue;
+
+                int flag = 0;
+                for (int k = 0; k < ban.length(); k++) {
+                    if (ban.charAt(k) != cur.charAt(k) && ban.charAt(k) != '*') break;
+                    flag++;
+                }
+                if (flag == ban.length()) tmp.add(j);
+            }
+            list[i] = tmp;
+        }
+
+        combination(0, banned_id.length, user_id.length);
         return set.size();
     }
 
-    static void backTracking(int cnt, int user_id_size, int banned_id_size){
-        if(cnt==banned_id_size){
+    static void combination(int cnt, int n, int length){
+        if(cnt==n){
             String s = "";
-            for(int i=0; i<user_id_size; i++)
-                if(visited[i])  s += i;
-
+            for(int i=0; i<length; i++){
+                if(visited[i])  s += i+"";
+            }
             set.add(s);
             return;
         }
 
-        ArrayList<Integer> cur = possibleAbusers[cnt];
+        ArrayList<Integer> cur = list[cnt];
         for(int i=0; i<cur.size(); i++){
             if(visited[cur.get(i)]) continue;
+
             visited[cur.get(i)] = true;
-            backTracking(cnt+1, user_id_size, banned_id_size);
+            combination(cnt+1, n, length);
             visited[cur.get(i)] = false;
         }
     }
 
-    static ArrayList<Integer>[] createPossibleAbusers(String[] user_id, String[] banned_id){
-        ArrayList<Integer>[] result = new ArrayList[banned_id.length];
-        for(int banned=0; banned<banned_id.length; banned++){
-            ArrayList<Integer> tmp = new ArrayList<>();
-            for(int user=0; user<user_id.length; user++){
-                boolean flag = true;
-                if(banned_id[banned].length()!=user_id[user].length())  continue; // 서로 길이 다르면 패스
-                for(int i=0; i<user_id[user].length(); i++){
-                    if(banned_id[banned].charAt(i)=='*') continue;
-                    if(user_id[user].charAt(i)!=banned_id[banned].charAt(i)) {
-                        flag = false;
-                        break;
-                    }
-                }
-                if(flag)    tmp.add(user);
-            }
-            result[banned] = new ArrayList<>(tmp);
-        }
-        return result;
-    }
-
-    public static void main(String args[]) throws IOException {
-        BufferedWriter bfw = new BufferedWriter(new OutputStreamWriter(System.out));
+    public static void main(String args[]) {
         String[] users = {"frodo", "fradi", "crodo", "abc123", "frodoc"};
         String[] banned = {"fr*d*", "abc1**"};
 
-        bfw.write(String.valueOf(solution(users,banned)));
-        bfw.close();
+        System.out.println(solution(users,banned));
     }
 }
