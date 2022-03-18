@@ -1,69 +1,53 @@
-import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class Archery {
-    static int appeachScore, ryanScore;
     static int max = Integer.MIN_VALUE;
     static ArrayList<int[]> list = new ArrayList<>();
 
     static int[] solution(int n, int[] info) {
-        int[] ry = new int[11];
-        backTracking(0, 0, n, info, ry);
-
-        if(list.size()==0)  return new int[]{-1}; // 가능한 결과 없을 때
-        Collections.sort(list, (o1,o2) -> {
-            for(int i=10; i>=0; i--)
-                if(o1[i]!=o2[i])    return o2[i]-o1[i];
-            return 0;
-        });
-
-        return list.get(0);
+        int[] ryanInfo = new int[11];
+        combination(n, 0, 0, info, ryanInfo);
+        if(max==Integer.MIN_VALUE)  return new int[]{-1};
+        else{
+            list.sort((o1, o2) -> {
+                for (int i = 10; i >= 0; i--)
+                    if (o1[i] != o2[i]) return o2[i] - o1[i];
+                return 0;
+            });
+            return list.get(0);
+        }
     }
 
-    static void backTracking(int cnt,int idx, int n, int[] ap, int[] ry){
-        if(cnt==n){ // 라이언이 화살 다 쐈으면 점수 계산해주자
-            getScore(ap, ry);
+    static void combination(int n, int cnt, int idx, int[] appeachInfo, int[] ryanInfo) {
+        if (cnt == n) { // 화살 다 쐈으면
+            int ryan = 0;
+            int appeach = 0;
+            for (int i = 0; i <= 10; i++) { // 둘이 점수 비교해서 더 큰 놈 찾기
+                if (appeachInfo[i] == 0 && ryanInfo[i] == 0) continue;
 
-            if(ryanScore>appeachScore){ // 라이언이 이길 경우
-                int diff = ryanScore - appeachScore;
-                if(diff>max){
-                    max = diff;
-                    list.clear();
-                    list.add(ry.clone());
-                }
-                else if(diff==max)  list.add(ry.clone());
+                if (appeachInfo[i] >= ryanInfo[i]) appeach += 10 - i;
+                else ryan += 10 - i;
             }
+            if (ryan - appeach > max && ryan > appeach) {
+                max = ryan - appeach;
+                list.clear();
+                list.add(ryanInfo.clone());
+            }
+            else if(ryan - appeach == max)  list.add(ryanInfo.clone());
             return;
         }
 
         for(int i=idx; i<11; i++){
-            ry[i]++;
-            backTracking(cnt+1, i, n, ap, ry);
-            ry[i]--;
+            ryanInfo[i]++;
+            combination(n, cnt+1, i, appeachInfo, ryanInfo);
+            ryanInfo[i]--;
         }
     }
 
-    static void getScore(int[] ap, int[] ry){ // 둘의 결과를 넘겨주면 각각으 점수 계산
-        appeachScore = 0;   ryanScore = 0;
-        for(int i=0; i<11; i++){
-            int appeach = ap[i];
-            int ryan = ry[i];
-            if(appeach==0 && ryan==0)   continue;
-
-            if(ryan>appeach) // 라이언이 점수를 얻는 경우
-                ryanScore += (10-i);
-            else // 어피치가 점수를 얻는 경우
-                appeachScore += (10-i);
-        }
-    }
-
-    public static void main(String[] args) throws IOException {
-        BufferedWriter bfw = new BufferedWriter(new OutputStreamWriter(System.out));
-        int n = 10;
-        int[] info = { 0,0,0,0,0,0,0,0,3,4,3 };
+    public static void main(String[] args) {
+        int n = 1;
+        int[] info = {1,0,0,0,0,0,0,0,0,0,0};
         int[] answer = solution(n, info);
-        for(int a: answer)  bfw.write(a + " ");
-        bfw.close();
+        for (int a : answer) System.out.println(a + " ");
     }
 }
