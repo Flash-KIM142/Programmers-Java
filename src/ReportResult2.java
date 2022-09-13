@@ -10,15 +10,12 @@ public class ReportResult2 {
         parsingReport(report);
 
         int idx = 0;
-        for(int i=0; i<id_list.length; i++){
-            String me = id_list[i];
+        for (String me : id_list) {
             Set<String> you = iReported.get(me);
-            int n=0;
+            int n = 0;
 
-            Iterator<String> it = you.iterator();
-            while(it.hasNext()){
-                if(reportedNum.get(it.next()) >= k) n++;
-            }
+            for (String s : you)
+                if (reportedNum.get(s) >= k) n++;
 
             answer[idx++] = n;
         }
