@@ -4,8 +4,7 @@ public class NumVocabString2 {
 
     public static void main(String[] args) {
         String s = "123";
-
-//        String target = "one";
+        //        String target = "one";
 //        s = s.replaceAll(target, "1");
 //        System.out.println(s);
         System.out.println(solution(s));

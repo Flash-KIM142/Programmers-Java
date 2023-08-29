@@ -11,7 +11,6 @@ public class 코딩테스트공부 {
     static final int INF = 2000000000;
 
     static int solution(int alp, int cop, int[][] problems) {
-        int answer = 0;
         int alp_target = 0, cop_target = 0;
 
         for(int[] prob: problems){
