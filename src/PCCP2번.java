@@ -3,110 +3,84 @@
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 
 public class PCCP2번 {
 
     static int rSize, cSize;
-    static int[][] connectionIdx;
-    static int connIdx = 1;
-    static Map<Integer, Integer> connectionInfo = new HashMap<>();
+    static int[][] fragments;
+    static int fragmentIdx = 1;
+    static Map<Integer, Integer> fragmentsInfo = new HashMap<>();
+    static boolean[][] visited;
+    static int[] dirR = {-1, 1, 0, 0};
+    static int[] dirC = {0, 0, -1, 1};
 
     public static int solution(int[][] land) {
         int answer = 0;
         rSize = land.length;
         cSize = land[0].length;
-        connectionIdx = new int[rSize][cSize];
+        fragments = new int[rSize][cSize];
+        visited = new boolean[rSize][cSize];
 
-        initConnectedInfo(land);
-
-        for (int c = 0; c < cSize; c++) {
-            int tmpAmount = 0;
-            Set<Integer> connectionIdxs = new HashSet<>();
-            for (int r = 0; r < rSize; r++) {
-                if (connectionIdx[r][c] == 0) {
+        for (int r = 0; r < rSize; r++) {
+            for (int c = 0; c < cSize; c++) {
+                if (visited[r][c] || land[r][c] == 0) {
                     continue;
                 }
-                connectionIdxs.add(connectionIdx[r][c]);
-            }
 
-            for (Integer idx : connectionIdxs) {
-                tmpAmount += connectionInfo.get(idx);
+                initFragment(land, r, c);
             }
-
-            answer = Math.max(answer, tmpAmount);
         }
+
+        for (int c = 0; c < cSize; c++) {
+            Set<Integer> fragmentTypes = new HashSet<>();
+            int tmpMaxAmount = 0;
+            for (int r = 0; r < rSize; r++) {
+                if (fragments[r][c] > 0) {
+                    fragmentTypes.add(fragments[r][c]);
+                }
+            }
+
+            for (Integer frg : fragmentTypes) {
+                tmpMaxAmount += fragmentsInfo.get(frg);
+            }
+
+            answer = Math.max(answer, tmpMaxAmount);
+        }
+
         return answer;
     }
 
-    static void initConnectedInfo(int[][] land) {
-        for (int r = 0; r < rSize; r++) {
-            for (int c = 0; c < cSize; c++) {
-                boolean[][] visited = new boolean[rSize][cSize];
-                if (connectionIdx[r][c] > 0) {
-                    continue;
-                }
-                if (land[r][c] == 0) {
-                    continue;
-                }
-
-                Set<Pos> visitedPos = new HashSet<>();
-                visitedPos.add(new Pos(r, c));
-                int connection = dfs(land, r, c, visited, visitedPos);
-                connectionInfo.put(connIdx, connection);
-
-                for (Pos p : visitedPos) {
-                    connectionIdx[p.r][p.c] = connIdx;
-                }
-                connIdx++;
-            }
-        }
-    }
-
-    private static int dfs(int[][] grid, int r, int c, boolean[][] visited, Set<Pos> visitedPos) {
-        if (r < 0 || r >= rSize || c < 0 || c >= cSize || grid[r][c] == 0 || visited[r][c]) {
-            return 0;
-        }
+    static void initFragment(int[][] land, int r, int c) {
         visited[r][c] = true;
-        visitedPos.add(new Pos(r, c));
+        fragments[r][c] = fragmentIdx;
+        Queue<int[]> q = new LinkedList<>();
+        q.add(new int[]{r, c});
+        int size = 0;
 
-        int count = 1;
-        count += dfs(grid, r - 1, c, visited, visitedPos); // Up
-        count += dfs(grid, r + 1, c, visited, visitedPos); // Down
-        count += dfs(grid, r, c - 1, visited, visitedPos); // Left
-        count += dfs(grid, r, c + 1, visited, visitedPos); // Right
+        while (!q.isEmpty()) {
+            int[] cur = q.poll();
+            size++;
 
-        return count;
-    }
+            for (int d = 0; d < 4; d++) {
+                int nxtR = cur[0] + dirR[d];
+                int nxtC = cur[1] + dirC[d];
 
-    static class Pos {
-        int r;
-        int c;
+                if (nxtR < 0 || nxtR >= rSize || nxtC < 0 || nxtC >= cSize || visited[nxtR][nxtC]
+                        || land[nxtR][nxtC] == 0) {
+                    continue;
+                }
 
-        Pos(int r, int c) {
-            this.r = r;
-            this.c = c;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass()) {
-                return false;
+                visited[nxtR][nxtC] = true;
+                fragments[nxtR][nxtC] = fragmentIdx;
+                q.add(new int[]{nxtR, nxtC});
             }
-            if (this == o) {
-                return true;
-            }
-
-            Pos cmp = (Pos) o;
-            return r == cmp.r && c == cmp.c;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(r, c);
-        }
+        fragmentsInfo.put(fragmentIdx++, size);
     }
 
     public static void main(String[] args) {
